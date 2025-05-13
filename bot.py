@@ -13,7 +13,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TELEGRAM_TOKEN = "7622164449:AAHSoqDGItig9OsgMiQP6qx8l2Eek1_A25w"
 CHAT_ID = "-1002426136698"  # Replace with your chat ID
 DOMAIN = "yearn.fi"
 CHECK_INTERVAL = 30  # seconds
