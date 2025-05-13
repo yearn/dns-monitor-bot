@@ -3,6 +3,7 @@ import socket
 import dns.resolver
 import logging
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -23,6 +24,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 DOMAIN = os.getenv('DOMAIN', 'yearn.fi')
 CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '30'))
+last_ping_time = datetime.now()  # Track last ping time
 
 # Validate required environment variables
 if not TELEGRAM_TOKEN:
@@ -94,6 +96,7 @@ async def notify_change(bot, old_details, new_details):
             logger.error(f"Failed to send Telegram message: {e}")
 
 async def monitor_dns(bot):
+    global last_ping_time
     logger.info(f"Starting DNS monitoring for {DOMAIN}")
     last_details = get_dns_details(DOMAIN)
     logger.info(f"Initial DNS for {DOMAIN}:\n{format_dns_details(last_details)}")
@@ -102,6 +105,7 @@ async def monitor_dns(bot):
         try:
             await asyncio.sleep(CHECK_INTERVAL)
             current_details = get_dns_details(DOMAIN)
+            last_ping_time = datetime.now()  # Update last ping time
             if current_details != last_details:
                 logger.info(f"DNS changes detected for {DOMAIN}")
                 await notify_change(bot, last_details, current_details)
@@ -127,7 +131,7 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        msg = f"🔍 DNS Monitor Status\n\nDomain: {DOMAIN}\nCheck Interval: {CHECK_INTERVAL} seconds\nChat ID: {CHAT_ID}"
+        msg = f"🔍 DNS Monitor Status\n\nDomain: {DOMAIN}\nCheck Interval: {CHECK_INTERVAL} seconds\nChat ID: {CHAT_ID}\nLast Ping: {last_ping_time.strftime('%Y-%m-%d %H:%M:%S')}"
         await update.message.reply_text(msg)
         logger.info(f"Sent status response to user {update.effective_user.id}")
     except Exception as e:
