@@ -3,7 +3,7 @@ import socket
 import dns.resolver
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -129,9 +129,27 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in check_command: {e}")
         await update.message.reply_text("Sorry, there was an error checking the DNS records.")
 
+def format_time_ago(dt):
+    now = datetime.now()
+    diff = now - dt
+    
+    if diff < timedelta(minutes=1):
+        return "just now"
+    elif diff < timedelta(hours=1):
+        minutes = int(diff.total_seconds() / 60)
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    elif diff < timedelta(days=1):
+        hours = int(diff.total_seconds() / 3600)
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    elif diff < timedelta(days=30):
+        days = int(diff.total_seconds() / 86400)
+        return f"{days} day{'s' if days != 1 else ''} ago"
+    else:
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        msg = f"🔍 DNS Monitor Status\n\nDomain: {DOMAIN}\nCheck Interval: {CHECK_INTERVAL} seconds\nChat ID: {CHAT_ID}\nLast Ping: {last_ping_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        msg = f"🔍 DNS Monitor Status\n\nDomain: {DOMAIN}\nCheck Interval: {CHECK_INTERVAL} seconds\nChat ID: {CHAT_ID}\nLast Ping: {format_time_ago(last_ping_time)}"
         await update.message.reply_text(msg)
         logger.info(f"Sent status response to user {update.effective_user.id}")
     except Exception as e:
