@@ -7,6 +7,7 @@ app = 'dns-monitor-bot'
 primary_region = 'gig'
 
 [build]
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 8080
