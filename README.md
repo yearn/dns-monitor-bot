@@ -1,31 +1,29 @@
 # DNS Monitor Bot
 
-This bot monitors the DNS of `yearn.fi` every 30 seconds and alerts you via Telegram if the IP changes.
+Monitors DNS records and alerts via Telegram if any changes are detected.
 
 ## Setup
 
-1. **Get your Telegram Chat ID:**
-   - Start a chat with [@userinfobot](https://t.me/userinfobot) on Telegram.
-   - Send any message and it will reply with your chat ID.
-   - Replace `YOUR_CHAT_ID_HERE` in `bot.py` with your chat ID.
-
-2. **Build and Run Locally:**
-   ```sh
-   pip install -r requirements.txt
-   python bot.py
+1. Create `.env` file:
+   ```
+   TELEGRAM_TOKEN=your_telegram_bot_token
+   CHAT_ID=your_chat_id
+   DOMAIN=domain_to_monitor
+   CHECK_INTERVAL=30
    ```
 
-3. **Deploy to Fly.io:**
-   - Install [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/)
-   - Run:
-     ```sh
-     fly launch --now
-     ```
-   - Follow prompts to deploy your bot.
+2. Get your Telegram Chat ID:
+   - Message [@userinfobot](https://t.me/userinfobot)
+   - Add the ID to your `.env` file
+
+3. Run with Docker:
+   ```sh
+   docker build -t dns-monitor-bot .
+   docker run --env-file .env dns-monitor-bot
+   ```
 
 ## Configuration
-- Edit `CHECK_INTERVAL` in `bot.py` to change the check frequency (default: 30 seconds).
-- The bot token is already set in `bot.py`.
-
-## Security
-- This bot helps detect DNS hijacking or attacks on your domain. 
+- `TELEGRAM_TOKEN`: Bot token (required)
+- `CHAT_ID`: Chat ID for notifications (required)
+- `DOMAIN`: Domain to monitor (default: yearn.fi)
+- `CHECK_INTERVAL`: Check frequency in seconds (default: 30) 

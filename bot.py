@@ -2,9 +2,14 @@ import asyncio
 import socket
 import dns.resolver
 import logging
+import os
+from dotenv import load_dotenv
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from telegram.error import TelegramError
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -13,9 +18,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CHAT_ID = "-1002426136698"  # Replace with your chat ID
-DOMAIN = "yearn.fi"
-CHECK_INTERVAL = 30  # seconds
+# Get configuration from environment variables
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')
+DOMAIN = os.getenv('DOMAIN', 'yearn.fi')
+CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '30'))
+
+# Validate required environment variables
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_TOKEN environment variable is required")
+if not CHAT_ID:
+    raise ValueError("CHAT_ID environment variable is required")
 
 async def resolve_domain(domain):
     try:
@@ -43,10 +56,10 @@ def get_dns_details(domain):
         try:
             records = resolver.resolve(domain, record_type)
             details[record_type] = formatter(records)
-        except dns.resolver.NXDOMAIN:
-            logger.warning(f"No {record_type} records found for {domain}")
-        except dns.resolver.NoAnswer:
-            logger.warning(f"No {record_type} records found for {domain}")
+        # except dns.resolver.NXDOMAIN:
+        #     logger.warning(f"No {record_type} records found for {domain}")
+        # except dns.resolver.NoAnswer:
+        #     logger.warning(f"No {record_type} records found for {domain}")
         except dns.resolver.Timeout:
             logger.error(f"Timeout resolving {record_type} records for {domain}")
         except Exception as e:
@@ -94,7 +107,7 @@ async def monitor_dns(bot):
                 await notify_change(bot, last_details, current_details)
                 last_details = current_details
             else:
-                logger.debug(f"No changes detected for {DOMAIN}")
+                logger.info(f"Ping successful - No DNS changes detected for {DOMAIN}")
         except Exception as e:
             logger.error(f"Error in monitor_dns: {e}")
             await asyncio.sleep(CHECK_INTERVAL)  # Wait before retrying
