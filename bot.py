@@ -80,10 +80,10 @@ def format_dns_details(details):
 async def notify_change(bot, old_details, new_details):
     changes = []
     for record_type in set(old_details.keys()) | set(new_details.keys()):
-        old_records = old_details.get(record_type, [])
-        new_records = new_details.get(record_type, [])
+        old_records = sorted(old_details.get(record_type, []))
+        new_records = sorted(new_details.get(record_type, []))
         if old_records != new_records:
-            changes.append(f"{record_type}:\nOld: {', '.join(old_records) if old_records else 'None'}\nNew: {', '.join(new_records) if new_records else 'None'}")
+            changes.append(f"{record_type}:\nOld: {' | '.join(old_records) if old_records else 'None'}\nNew: {' | '.join(new_records) if new_records else 'None'}")
     
     if changes:
         msg = f"[ALERT] DNS changes detected for {DOMAIN}!\n\n" + "\n\n".join(changes)
