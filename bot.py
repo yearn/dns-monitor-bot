@@ -74,7 +74,7 @@ def format_dns_details(details):
     formatted = []
     for record_type, records in details.items():
         if records:
-            formatted.append(f"{record_type}: {', '.join(records)}")
+            formatted.append(f"{record_type}: {' | '.join(sorted(records))}")
     return '\n'.join(formatted) if formatted else "No DNS records found"
 
 async def notify_change(bot, old_details, new_details):
